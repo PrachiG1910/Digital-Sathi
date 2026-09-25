@@ -1,0 +1,6 @@
+{
+  "name": "Digital Sathi",
+  "description": "A senior-citizen-friendly digital literacy learning platform for smartphone basics, calling, WhatsApp, UPI payments, YouTube, and digital safety.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
