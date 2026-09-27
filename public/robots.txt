@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+# Digital Sathi - Digital Literacy Platform
