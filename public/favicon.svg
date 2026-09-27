@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="ds-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D5C5A" />
+      <stop offset="100%" stop-color="#083E3D" />
+    </linearGradient>
+    <linearGradient id="accent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E2693D" />
+      <stop offset="100%" stop-color="#C55227" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Outer Rounded Badge -->
+  <rect x="5" y="5" width="90" height="90" rx="24" fill="url(#ds-grad)" />
+  <rect x="7" y="7" width="86" height="86" rx="22" fill="none" stroke="#E2693D" stroke-width="2" opacity="0.4" />
+  
+  <!-- Smartphone Frame -->
+  <rect x="30" y="20" width="40" height="60" rx="9" fill="#FAF7F2" stroke="#FAF7F2" stroke-width="2" />
+  <rect x="34" y="27" width="32" height="44" rx="4" fill="#EAE4D9" />
+  
+  <!-- Phone Speaker & Home Button -->
+  <line x1="45" y1="23.5" x2="55" y2="23.5" stroke="#0D5C5A" stroke-width="2" stroke-linecap="round" />
+  <circle cx="50" cy="75" r="2.5" fill="#0D5C5A" />
+  
+  <!-- Heart / Helping Hand Accent inside Screen -->
+  <circle cx="50" cy="49" r="11" fill="url(#accent-grad)" />
+  <path d="M46 47 C46 44, 50 43, 50 47 C50 43, 54 44, 54 47 C54 51, 50 54, 50 54 C50 54, 46 51, 46 47 Z" fill="#FFFFFF" />
+  
+  <!-- Golden Sparkle on Top Right -->
+  <path d="M72 18 L74 24 L80 26 L74 28 L72 34 L70 28 L64 26 L70 24 Z" fill="#F59E0B" />
+</svg>

@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
+    "server": "tsx backend/index.ts",
+    "server:watch": "tsx watch backend/index.ts",
+    "start": "NODE_ENV=production tsx backend/index.ts",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
