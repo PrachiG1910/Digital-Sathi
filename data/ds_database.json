@@ -1,6 +1,32 @@
 {
   "version": 1,
-  "lastUpdated": "2026-09-27T00:00:00.000Z",
-  "users": {},
-  "alerts": []
+  "lastUpdated": "2026-09-27T11:37:49.901Z",
+  "users": {
+    "9876543210": {
+      "phone": "9876543210",
+      "name": "Anand Verma",
+      "language": "hi",
+      "completedLessons": [
+        "intro-basics"
+      ],
+      "completedPractices": [],
+      "practiceScore": 25,
+      "voiceRate": 0.85,
+      "fontSize": "large",
+      "createdAt": "2026-09-27T11:37:30.276Z",
+      "updatedAt": "2026-09-27T11:37:38.790Z",
+      "lastLoginAt": "2026-09-27T11:37:30.276Z"
+    }
+  },
+  "alerts": [
+    {
+      "id": "alert-1790509069901-qgjk3",
+      "phone": "9876543210",
+      "name": "Anand Verma",
+      "alertType": "family_help",
+      "message": "Senior requested help from family",
+      "createdAt": "2026-09-27T11:37:49.901Z",
+      "status": "sent"
+    }
+  ]
 }

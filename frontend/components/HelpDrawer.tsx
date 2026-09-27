@@ -113,6 +113,19 @@ export const HelpDrawer: React.FC<HelpDrawerProps> = ({
                 type="button"
                 onClick={() => {
                   setFamilyAlertSent(true);
+                  // Notify backend emergency endpoint
+                  try {
+                    fetch('/api/help/alert', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        alertType: 'family_help',
+                        message: 'Senior requested family assistance via help drawer',
+                      }),
+                    }).catch(() => {});
+                  } catch {
+                    // Safe offline fallback
+                  }
                   const msg =
                     lang === 'hi'
                       ? 'परिवार के सदस्य को संदेश भेज दिया गया है।'
