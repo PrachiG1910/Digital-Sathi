@@ -2192,7 +2192,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
 
           <div className="p-1.5 rounded-xl bg-slate-900/90 border border-rose-500/40 text-center">
             <span className="text-[10px] text-rose-300 font-bold">
-              {phoneState.igSignedIn || isPracticed
+              {phoneState.igLoggedIn || isPracticed
                 ? (isMr ? 'इन्स्टाग्राम उघडले ' : 'इन्स्टाग्राम खुल गया ')
                 : (isMr ? 'रंगीबेरंगी Instagram चिन्हावर स्पर्श करा' : 'रंग-बिरंगे Instagram आइकन पर छुएं')}
             </span>

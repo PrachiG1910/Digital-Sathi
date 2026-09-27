@@ -21,7 +21,12 @@
       ]
     },
     "allowImportingTsExtensions": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "noEmit": true
-  }
+  },
+  "include": [
+    "frontend/**/*",
+    "backend/**/*",
+    "vite.config.ts"
+  ]
 }
