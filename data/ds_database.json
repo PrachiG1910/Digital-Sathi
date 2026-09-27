@@ -1,21 +1,32 @@
 {
   "version": 1,
-  "lastUpdated": "2026-09-27T11:37:49.901Z",
+  "lastUpdated": "2026-09-27T11:49:29.312Z",
   "users": {
     "9876543210": {
       "phone": "9876543210",
-      "name": "Anand Verma",
+      "name": "varun",
       "language": "hi",
-      "completedLessons": [
-        "intro-basics"
-      ],
+      "completedLessons": [],
       "completedPractices": [],
-      "practiceScore": 25,
+      "practiceScore": 0,
       "voiceRate": 0.85,
       "fontSize": "large",
       "createdAt": "2026-09-27T11:37:30.276Z",
-      "updatedAt": "2026-09-27T11:37:38.790Z",
+      "updatedAt": "2026-09-27T11:49:29.312Z",
       "lastLoginAt": "2026-09-27T11:37:30.276Z"
+    },
+    "9876543216": {
+      "phone": "9876543216",
+      "name": "sunita",
+      "language": "mr",
+      "completedLessons": [],
+      "completedPractices": [],
+      "practiceScore": 0,
+      "voiceRate": 0.85,
+      "fontSize": "large",
+      "createdAt": "2026-09-27T11:47:33.387Z",
+      "updatedAt": "2026-09-27T11:47:39.373Z",
+      "lastLoginAt": "2026-09-27T11:47:33.387Z"
     }
   },
   "alerts": [

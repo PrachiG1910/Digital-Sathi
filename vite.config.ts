@@ -68,7 +68,16 @@ export default defineConfig(() => {
         },
       },
       hmr: process.env.DISABLE_HMR !== 'true',
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      watch: {
+        ignored: [
+          '**/data/**',
+          '**/backend/**',
+          '**/*.tmp',
+          '**/ds_database.json',
+          '**/node_modules/**',
+          '**/.git/**',
+        ],
+      },
     },
   };
 });

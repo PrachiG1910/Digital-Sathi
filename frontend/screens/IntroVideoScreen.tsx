@@ -38,14 +38,22 @@ const splitIntoGraphemes = (text: string): string[] => {
   return Array.from(text);
 };
 
-// Animated alphabet-by-alphabet component
+// Animated alphabet-by-alphabet component (animates once smoothly without blinking on re-renders)
 const AnimatedAlphabetText: React.FC<{
   text: string;
   className?: string;
   delayOffset?: number;
   letterDelay?: number;
-}> = ({ text, className = '', delayOffset = 0, letterDelay = 45 }) => {
+}> = React.memo(({ text, className = '', delayOffset = 0, letterDelay = 45 }) => {
   const characters = useMemo(() => splitIntoGraphemes(text), [text]);
+  const [hasAnimated, setHasAnimated] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setHasAnimated(true);
+    }, delayOffset + characters.length * letterDelay + 600);
+    return () => clearTimeout(timer);
+  }, [text, delayOffset, characters.length, letterDelay]);
 
   return (
     <span className={`inline-flex flex-wrap items-center justify-center ${className}`}>
@@ -54,9 +62,9 @@ const AnimatedAlphabetText: React.FC<{
         return (
           <span
             key={`${text}-${index}-${char}`}
-            className="animate-letter-reveal"
+            className={hasAnimated ? '' : 'animate-letter-reveal'}
             style={{
-              animationDelay: `${delayOffset + index * letterDelay}ms`,
+              animationDelay: hasAnimated ? undefined : `${delayOffset + index * letterDelay}ms`,
               minWidth: isSpace ? '0.35em' : undefined,
             }}
           >
@@ -66,7 +74,7 @@ const AnimatedAlphabetText: React.FC<{
       })}
     </span>
   );
-};
+});
 
 export const IntroVideoScreen: React.FC<IntroVideoScreenProps> = ({
   onComplete,
