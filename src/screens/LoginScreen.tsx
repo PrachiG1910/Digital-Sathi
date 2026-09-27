@@ -25,6 +25,34 @@ interface LoginScreenProps {
   onLoginSuccess: (profile: UserProfile) => void;
 }
 
+const RANDOM_PROFILES = [
+  {
+    name: { en: 'Anand Verma', hi: 'आनंद वर्मा', mr: 'आनंद जोशी' },
+    phone: '9823456789',
+    formattedPhone: '98234 56789',
+  },
+  {
+    name: { en: 'Sunita Devi', hi: 'सुनीता देवी', mr: 'सुनिता पवार' },
+    phone: '9876512340',
+    formattedPhone: '98765 12340',
+  },
+  {
+    name: { en: 'Rajesh Kumar', hi: 'राजेश कुमार', mr: 'राजेश कदम' },
+    phone: '9812345678',
+    formattedPhone: '98123 45678',
+  },
+  {
+    name: { en: 'Meena Sharma', hi: 'मीना शर्मा', mr: 'मीना कुलकर्णी' },
+    phone: '9765432109',
+    formattedPhone: '97654 32109',
+  },
+  {
+    name: { en: 'Suresh Patel', hi: 'सुरेश पटेल', mr: 'सुरेश पाटील' },
+    phone: '9890123456',
+    formattedPhone: '98901 23456',
+  },
+];
+
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   lang,
   theme = 'bright',
@@ -39,6 +67,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
   const t = translations[lang];
   const isDark = theme === 'dark';
+
+  const [profileIndex] = useState(() => Math.floor(Math.random() * RANDOM_PROFILES.length));
+  const currentDemo = RANDOM_PROFILES[profileIndex];
+  const demoName = currentDemo.name[lang] || currentDemo.name.en;
+  const namePlaceholder = lang === 'en' ? `e.g. ${demoName}` : `उदा. ${demoName}`;
+  const phonePlaceholder = lang === 'en' ? `e.g. ${currentDemo.formattedPhone}` : `उदा. ${currentDemo.formattedPhone}`;
 
   const handleReadScreen = () => {
     if (isSpeaking) {
@@ -57,8 +91,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   };
 
   const handleQuickFill = () => {
-    setName(lang === 'hi' ? 'रमेश जी' : lang === 'mr' ? 'रमेश काका' : 'Ramesh Ji');
-    setPhone('9876543210');
+    setName(demoName);
+    setPhone(currentDemo.phone);
     setErrorMsg('');
     speechService.speak(lang === 'en' ? 'Demo profile filled in.' : lang === 'mr' ? 'डेमो प्रोफाइल भरले आहे.' : 'डेमो प्रोफाइल भर दिया गया है।', lang);
   };
@@ -210,7 +244,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               }`}
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
-              <span>{t.quickFillBtn} (e.g. Ramesh Ji)</span>
+              <span>{t.quickFillBtn} ({demoName})</span>
             </button>
           </div>
 
@@ -253,7 +287,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   setName(e.target.value);
                   setErrorMsg('');
                 }}
-                placeholder={t.fullNamePlaceholder}
+                placeholder={namePlaceholder}
                 className={`w-full p-4 rounded-2xl border-2 text-lg sm:text-xl font-bold outline-none transition-all shadow-inner ${
                   isDark
                     ? 'bg-slate-800/90 border-slate-700 text-white focus:border-[#D96B43] focus:bg-slate-800'
@@ -282,7 +316,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   maxLength={10}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t.phonePlaceholder}
+                  placeholder={phonePlaceholder}
                   className={`w-full pl-16 pr-4 py-4 rounded-2xl border-2 text-lg sm:text-xl font-bold outline-none transition-all shadow-inner tracking-wider ${
                     isDark
                       ? 'bg-slate-800/90 border-slate-700 text-white focus:border-[#D96B43] focus:bg-slate-800'

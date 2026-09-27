@@ -512,6 +512,7 @@ export default function App() {
                 profile={userProfile}
                 stages={stages}
                 lang={language}
+                theme={theme}
                 onSelectStage={(stage) => {
                   setSelectedStage(stage);
                   navigateTo('stage_detail');

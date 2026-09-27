@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0D5C5A" />
+      <stop offset="100%" stop-color="#083E3D" />
+    </linearGradient>
+    <linearGradient id="terracottaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E07A5F" />
+      <stop offset="100%" stop-color="#D96B43" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Background Circle/Rounded Rect -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+
+  <!-- Inner Soft Accent Ring -->
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="none" stroke="#D96B43" stroke-width="8" stroke-opacity="0.4" />
+
+  <!-- Phone Silhouette -->
+  <rect x="156" y="96" width="200" height="320" rx="36" fill="#FAF7F2" filter="url(#shadow)" />
+  <rect x="172" y="132" width="168" height="232" rx="16" fill="#0D5C5A" />
+  
+  <!-- Phone Screen Sparkles / Graduation Heart -->
+  <circle cx="256" cy="220" r="44" fill="url(#terracottaGrad)" />
+  
+  <!-- DS Initial / Symbol -->
+  <text x="256" y="234" font-family="system-ui, -apple-system, sans-serif" font-size="34" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="2">DS</text>
+  
+  <!-- Heart Icon on screen -->
+  <path d="M 236 280 C 220 264 210 280 236 304 L 256 324 L 276 304 C 302 280 292 264 276 280 L 256 300 Z" fill="#E07A5F" />
+
+  <!-- Phone Speaker & Home bar -->
+  <rect x="226" y="112" width="60" height="6" rx="3" fill="#D1D5DB" />
+  <rect x="220" y="386" width="72" height="6" rx="3" fill="#9CA3AF" />
+
+  <!-- Sparkle top right -->
+  <path d="M 380 90 L 390 115 L 415 125 L 390 135 L 380 160 L 370 135 L 345 125 L 370 115 Z" fill="#F4A261" />
+  <path d="M 120 370 L 126 385 L 141 391 L 126 397 L 120 412 L 114 397 L 99 391 L 114 385 Z" fill="#F4A261" />
+</svg>

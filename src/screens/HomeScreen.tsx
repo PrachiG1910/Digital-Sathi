@@ -26,11 +26,13 @@ import {
 import { Stage, UserProfile, LanguageCode, PracticeTask } from '../types';
 import { translations } from '../data/translations';
 import { speechService } from '../services/speech';
+import { InstallAppBanner } from '../components/InstallAppBanner';
 
 interface HomeScreenProps {
   profile: UserProfile;
   stages: Stage[];
   lang: LanguageCode;
+  theme?: 'bright' | 'dark';
   onSelectStage: (stage: Stage) => void;
   onStartPractice: (task?: PracticeTask) => void;
   onOpenSafetyQuiz: () => void;
@@ -62,6 +64,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
   profile,
   stages,
   lang,
+  theme = 'bright',
   onSelectStage,
   onStartPractice,
   onOpenSafetyQuiz,
@@ -113,6 +116,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
 
   return (
     <div id="screen-home" className="space-y-4 sm:space-y-7 pb-16">
+      {/* 1-Click Local PWA Install Banner */}
+      <InstallAppBanner lang={lang} theme={theme} />
+
       {/* Handcrafted Hero Welcome Card */}
       <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-[#0D5C5A] via-[#0A4846] to-[#073634] text-white p-4 sm:p-9 shadow-xl border border-[#0D5C5A]/40">
         {/* Soft atmospheric ambient glow */}
