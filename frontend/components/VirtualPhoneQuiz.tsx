@@ -750,18 +750,18 @@ export function getStepQuizDetails(
     question: isEn
       ? `Follow the visual guide: ${step.title}`
       : isMr
-      ? `मार्गदर्शिकेनुसार सराव पूर्ण करा: ${step.title}`
-      : `दिए गए मार्गदर्शन के अनुसार अभ्यास करें: ${step.title}`,
+        ? `मार्गदर्शिकेनुसार सराव पूर्ण करा: ${step.title}`
+        : `दिए गए मार्गदर्शन के अनुसार अभ्यास करें: ${step.title}`,
     correctOption: isEn
       ? 'Perform the safe action indicated on the phone screen'
       : isMr
-      ? 'फोन स्क्रीनवर दाखवलेली योग्य कृती करा'
-      : 'फोन स्क्रीन पर दिखाई गई सुरक्षित क्रिया करें',
+        ? 'फोन स्क्रीनवर दाखवलेली योग्य कृती करा'
+        : 'फोन स्क्रीन पर दिखाई गई सुरक्षित क्रिया करें',
     wrongOption: isEn
       ? 'Press random unknown buttons'
       : isMr
-      ? 'स्क्रीनवर कोणतेही चुकीचे बटण दाबा'
-      : 'स्क्रीन पर कोई भी गलत बटन दबाएं',
+        ? 'स्क्रीनवर कोणतेही चुकीचे बटण दाबा'
+        : 'स्क्रीन पर कोई भी गलत बटन दबाएं',
     actionLabel: isEn ? 'Tap Phone Screen' : isMr ? 'स्क्रीनवर स्पर्श करा' : 'स्क्रीन पर टैप करें',
     onPerform: () => {
       setPhoneState((s) => ({ ...s }));
@@ -802,9 +802,8 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
           quiz.onPerform();
         }
       }}
-      className={`w-full max-w-[270px] sm:max-w-[290px] h-80 sm:h-88 mx-auto rounded-[32px] sm:rounded-[36px] bg-slate-950 border-3 sm:border-4 ${
-        isPracticed ? 'border-emerald-500 ring-4 ring-emerald-400/40' : 'border-slate-700 hover:border-teal-500'
-      } p-3 shadow-2xl relative flex flex-col justify-between text-white select-none touch-manipulation cursor-pointer active:scale-[0.99] transition-all group overflow-hidden`}
+      className={`w-full max-w-[270px] sm:max-w-[290px] h-80 sm:h-88 mx-auto rounded-[32px] sm:rounded-[36px] bg-slate-950 border-3 sm:border-4 ${isPracticed ? 'border-emerald-500 ring-4 ring-emerald-400/40' : 'border-slate-700 hover:border-teal-500'
+        } p-3 shadow-2xl relative flex flex-col justify-between text-white select-none touch-manipulation cursor-pointer active:scale-[0.99] transition-all group overflow-hidden`}
     >
       {/* Top phone bezel, speaker earpiece & front camera */}
       <div className="w-full flex items-center justify-between px-2 pt-0.5 text-[10px] text-slate-400 pointer-events-none shrink-0">
@@ -844,9 +843,8 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
         e.stopPropagation();
         quiz.onPerform();
       }}
-      className={`w-full py-2.5 px-3 rounded-2xl ${
-        customColor || 'bg-[#0D5C5A] hover:bg-[#0A4846] text-white ring-2 ring-teal-400/40'
-      } font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 cursor-pointer touch-manipulation select-none transition-transform shrink-0 mt-auto`}
+      className={`w-full py-2.5 px-3 rounded-2xl ${customColor || 'bg-[#0D5C5A] hover:bg-[#0A4846] text-white ring-2 ring-teal-400/40'
+        } font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 cursor-pointer touch-manipulation select-none transition-transform shrink-0 mt-auto`}
     >
       {icon || <Check className="w-4 h-4" />}
       <span>{label}</span>
@@ -934,7 +932,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
           <span className="text-2xl font-light text-white tracking-wider">10:30</span>
           <span className="text-[10px] text-slate-400 mt-0.5">{isEn ? 'Monday, August 15' : isMr ? 'सोमवार, १५ ऑगस्ट' : 'सोमवार, 15 अगस्त'}</span>
           <p className="text-[11px] text-amber-300 font-bold mt-2 animate-bounce">
-             {isEn ? 'Swipe up to unlock' : isMr ? 'अनलॉक करण्यासाठी वर सरकवा' : 'अनलॉक करने के लिए ऊपर स्वाइप करें'}
+            {isEn ? 'Swipe up to unlock' : isMr ? 'अनलॉक करण्यासाठी वर सरकवा' : 'अनलॉक करने के लिए ऊपर स्वाइप करें'}
           </p>
         </div>
         {renderActionButton(quiz.actionLabel, <Unlock className="w-4 h-4" />)}
@@ -1169,7 +1167,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               </div>
               <span className="text-[10px] text-emerald-300 font-extrabold mt-1">WhatsApp</span>
               <span className="text-[8px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-full mt-0.5 shadow-sm animate-bounce">
-                 येथे दाबा
+                येथे दाबा
               </span>
             </div>
           </div>
@@ -1232,7 +1230,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               <div className="text-right shrink-0">
                 <span className="text-[8px] text-emerald-400 font-bold block">10:15 AM</span>
                 <span className="text-[8px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded-full shadow-xs">
-                   उघडा
+                  उघडा
                 </span>
               </div>
             </div>
@@ -1434,7 +1432,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                   <div className="flex justify-between text-[8px] text-teal-200">
                     <span>0:14</span>
                     <span className="flex items-center gap-0.5">
-                       <Mic className="w-2.5 h-2.5" />
+                      <Mic className="w-2.5 h-2.5" />
                     </span>
                   </div>
                 </div>
@@ -1551,7 +1549,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
           {/* Spacebar Instruction Demonstration */}
           <div className="p-2 rounded-xl bg-slate-900 border border-teal-500 text-center space-y-1">
             <span className="text-[9px] text-amber-300 font-bold block">
-               स्पेसबार दाबून ठेवा आणि भाषा बदला
+              स्पेसबार दाबून ठेवा आणि भाषा बदला
             </span>
             <div className="py-1 rounded-lg bg-teal-600 text-white text-[10px] font-black flex items-center justify-center gap-1">
               <Globe className="w-3.5 h-3.5" />
@@ -1589,7 +1587,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                   <Video className="w-4 h-4 text-slate-950" />
                 </div>
                 <span className="absolute -bottom-6 -right-2 bg-amber-400 text-slate-950 font-black text-[8px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-md animate-bounce">
-                   व्हिडिओ कॉल
+                  व्हिडिओ कॉल
                 </span>
               </div>
               <Phone className="w-3.5 h-3.5 text-slate-300" />
@@ -1600,7 +1598,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
           {/* Explanation canvas */}
           <div className="flex-1 bg-slate-900 p-3 flex flex-col items-center justify-center text-center space-y-2">
             <div className="w-14 h-14 rounded-full bg-teal-600/30 border-2 border-teal-400 text-teal-300 flex items-center justify-center text-2xl shadow-inner">
-               &harr; 
+              &harr;
             </div>
             <p className="text-xs font-extrabold text-white">समोरासमोर व्हिडिओ कॉल</p>
             <p className="text-[10px] text-slate-300 leading-snug">
@@ -1644,7 +1642,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                 <PhoneOff className="w-6 h-6" />
               </div>
               <span className="absolute -top-6 -left-8 bg-rose-500 text-white font-black text-[8px] px-2 py-0.5 rounded-full whitespace-nowrap shadow-md animate-bounce">
-                 कॉल बंद करा (लाल बटण)
+                कॉल बंद करा (लाल बटण)
               </span>
             </div>
 
@@ -1695,7 +1693,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               <div className="flex items-center gap-2.5">
                 <div className="relative">
                   <div className="w-10 h-10 rounded-full bg-teal-700 text-white flex items-center justify-center text-sm font-bold">
-                    
+
                   </div>
                   <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#25D366] text-white font-extrabold text-xs rounded-full flex items-center justify-center shadow-md ring-2 ring-slate-900 animate-pulse">
                     +
@@ -1707,7 +1705,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                 </div>
               </div>
               <span className="text-[8px] bg-amber-400 text-slate-950 font-black px-2 py-0.5 rounded-full shadow-sm animate-bounce">
-                 + दाबा
+                + दाबा
               </span>
             </div>
 
@@ -1749,7 +1747,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               <span className="text-3xl block animate-bounce"></span>
               <span className="text-[9px] font-extrabold text-white mt-1 block">सुंदर ताजी फुले</span>
               <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[9px] font-black">
-                
+
               </div>
             </div>
 
@@ -1774,7 +1772,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
 
           <div className="p-1 rounded-lg bg-emerald-950/80 border border-emerald-500 text-center">
             <span className="text-[10px] text-emerald-300 font-bold">
-               सुंदर फुलांचा फोटो निवडला आहे
+              सुंदर फुलांचा फोटो निवडला आहे
             </span>
           </div>
         </div>
@@ -1820,7 +1818,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
             <div className="p-2 rounded-xl bg-amber-950/60 border border-amber-500 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
-                  
+
                 </div>
                 <div className="leading-tight">
                   <p className="text-[10px] font-black text-white">श्री राम जानकी बैठे हैं</p>
@@ -1828,7 +1826,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                 </div>
               </div>
               <span className="text-[8px] bg-emerald-500 text-white font-black px-2 py-0.5 rounded-full shadow-xs">
-                 जोडले
+                जोडले
               </span>
             </div>
 
@@ -1874,7 +1872,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                 <Send className="w-5 h-5 ml-0.5" />
               </div>
               <span className="absolute -top-6 -left-10 bg-amber-400 text-slate-950 font-black text-[8px] px-1.5 py-0.5 rounded-full whitespace-nowrap shadow-md animate-bounce">
-                 येथे दाबा (Send)
+                येथे दाबा (Send)
               </span>
             </div>
           </div>
@@ -2011,7 +2009,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
           <div className="p-2 rounded-xl bg-slate-900 border border-emerald-500/40 text-left">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/80 px-1.5 py-0.5 rounded">
-                VM-SBIINB 
+                VM-SBIINB
               </span>
               <span className="text-[9px] text-slate-500">10:31</span>
             </div>
@@ -2057,7 +2055,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
             "मी बँकेतून बोलत आहे, KYC साठी OTP सांगा"
           </p>
           <span className="text-[10px] text-amber-300 font-bold mt-1">
-             OTP कधीही कोणाला सांगू नका!
+            OTP कधीही कोणाला सांगू नका!
           </span>
         </div>
         {renderActionButton(quiz.actionLabel, <PhoneOff className="w-4 h-4" />, 'bg-rose-600 hover:bg-rose-700 text-white')}
@@ -2150,7 +2148,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 31. Instagram Sign In / App Launch
   if (type === 'instagram_signin') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between p-1 relative text-left">
@@ -2206,7 +2204,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 32. Instagram Profile
   if (type === 'instagram_profile') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between overflow-hidden text-left bg-slate-950 rounded-xl">
@@ -2227,7 +2225,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               {/* Avatar with Story Gradient Ring */}
               <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 p-0.5 shadow-md">
                 <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center text-xl">
-                  
+
                 </div>
               </div>
               <div className="flex gap-3 text-center">
@@ -2277,7 +2275,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
             <span className="text-xs"></span>
             {/* Highlighted Profile icon */}
             <div className="w-5 h-5 rounded-full ring-2 ring-rose-500 flex items-center justify-center text-[10px] bg-slate-800 animate-pulse">
-              
+
             </div>
           </div>
         </div>
@@ -2289,7 +2287,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 33. Instagram Contacts / Search & Follow
   if (type === 'instagram_contacts') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between overflow-hidden text-left bg-slate-950 rounded-xl p-1 space-y-1">
@@ -2317,11 +2315,10 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               <div className="relative">
                 <button
                   type="button"
-                  className={`px-3 py-1 rounded-xl text-[10px] font-black shadow-sm transition-all ${
-                    phoneState.igFollowed || isPracticed
-                      ? 'bg-slate-800 text-slate-200 border border-slate-700'
-                      : 'bg-blue-600 text-white ring-2 ring-blue-400 animate-pulse'
-                  }`}
+                  className={`px-3 py-1 rounded-xl text-[10px] font-black shadow-sm transition-all ${phoneState.igFollowed || isPracticed
+                    ? 'bg-slate-800 text-slate-200 border border-slate-700'
+                    : 'bg-blue-600 text-white ring-2 ring-blue-400 animate-pulse'
+                    }`}
                 >
                   {phoneState.igFollowed || isPracticed ? 'Following ' : 'Follow '}
                 </button>
@@ -2363,14 +2360,14 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 34. Instagram Reels
   if (type === 'instagram_reels') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between overflow-hidden relative rounded-2xl bg-gradient-to-b from-slate-900 via-amber-950/40 to-slate-950 text-left">
           {/* Reel Header */}
           <div className="p-2 flex items-center justify-between z-10">
             <span className="text-xs font-black text-white flex items-center gap-1 drop-shadow">
-              Reels 
+              Reels
             </span>
             <Camera className="w-4 h-4 text-white" />
           </div>
@@ -2389,11 +2386,10 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
             {/* Heart Like Button Highlighted with Glowing Ring */}
             <div className="flex flex-col items-center relative">
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center shadow-2xl transition-all ${
-                  phoneState.igReelLiked || isPracticed
-                    ? 'bg-rose-600 text-white ring-4 ring-rose-400'
-                    : 'bg-slate-900/80 text-white ring-4 ring-rose-500/80 animate-pulse'
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center shadow-2xl transition-all ${phoneState.igReelLiked || isPracticed
+                  ? 'bg-rose-600 text-white ring-4 ring-rose-400'
+                  : 'bg-slate-900/80 text-white ring-4 ring-rose-500/80 animate-pulse'
+                  }`}
               >
                 <Heart className={`w-5 h-5 ${phoneState.igReelLiked || isPracticed ? 'fill-white' : 'fill-rose-500 text-rose-500'}`} />
               </div>
@@ -2436,7 +2432,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 35. Instagram Follow Requests
   if (type === 'instagram_requests') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between overflow-hidden text-left bg-slate-950 rounded-xl p-1.5 space-y-2">
@@ -2472,11 +2468,10 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  className={`px-3 py-1 rounded-xl text-[10px] font-black shadow-sm transition-all ${
-                    phoneState.igRequestConfirmed || isPracticed
-                      ? 'bg-slate-800 text-emerald-400 border border-emerald-500'
-                      : 'bg-blue-600 text-white ring-2 ring-blue-400 animate-pulse'
-                  }`}
+                  className={`px-3 py-1 rounded-xl text-[10px] font-black shadow-sm transition-all ${phoneState.igRequestConfirmed || isPracticed
+                    ? 'bg-slate-800 text-emerald-400 border border-emerald-500'
+                    : 'bg-blue-600 text-white ring-2 ring-blue-400 animate-pulse'
+                    }`}
                 >
                   {phoneState.igRequestConfirmed || isPracticed ? 'Confirmed ' : 'Confirm '}
                 </button>
@@ -2500,7 +2495,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 36. Instagram Post / Share
   if (type === 'instagram_post') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between overflow-hidden text-left bg-slate-950 rounded-xl p-1.5 space-y-1.5">
@@ -2514,7 +2509,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
                 type="button"
                 className="px-3 py-1 rounded-xl bg-blue-600 text-white text-[10px] font-black shadow-md ring-2 ring-blue-400 animate-pulse"
               >
-                Share 
+                Share
               </button>
             </div>
           </div>
@@ -2522,7 +2517,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
           {/* Photo & Caption */}
           <div className="flex gap-2 items-center bg-slate-900 p-2 rounded-xl border border-slate-800">
             <div className="w-14 h-14 rounded-lg bg-gradient-to-tr from-amber-950 to-rose-950 border border-slate-700 flex items-center justify-center text-2xl shrink-0">
-              
+
             </div>
             <div className="flex-1">
               <p className="text-[10px] text-white font-bold">
@@ -2556,14 +2551,13 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 37. Flashlight
   if (type === 'flashlight') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col items-center justify-center text-center p-2">
           <div
-            className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-2 shadow-2xl transition-all ${
-              phoneState.flashlightOn || isPracticed ? 'bg-amber-400 text-slate-950 ring-4 ring-amber-300' : 'bg-slate-800 text-slate-400'
-            }`}
+            className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-2 shadow-2xl transition-all ${phoneState.flashlightOn || isPracticed ? 'bg-amber-400 text-slate-950 ring-4 ring-amber-300' : 'bg-slate-800 text-slate-400'
+              }`}
           >
             <Flashlight className="w-9 h-9" />
           </div>
@@ -2584,7 +2578,7 @@ export const VirtualPhoneIllustration: React.FC<VirtualPhoneIllustrationProps> =
   // 38. Emergency Call (112 SOS)
   if (type === 'emergency_call') {
     const isEn = lang === 'en';
-  const isMr = lang === 'mr';
+    const isMr = lang === 'mr';
     return renderPhoneShell(
       <>
         <div className="w-full flex-1 flex flex-col justify-between overflow-hidden text-center p-2">

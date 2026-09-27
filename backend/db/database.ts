@@ -49,9 +49,7 @@ class Database {
   private saveSync() {
     try {
       this.schema.lastUpdated = new Date().toISOString();
-      const tmpPath = `${config.dbFilePath}.tmp`;
-      fs.writeFileSync(tmpPath, JSON.stringify(this.schema, null, 2), 'utf-8');
-      fs.renameSync(tmpPath, config.dbFilePath);
+      fs.writeFileSync(config.dbFilePath, JSON.stringify(this.schema, null, 2), 'utf-8');
     } catch (error) {
       console.error('[Database] Failed to write database synchronously:', error);
     }
@@ -66,9 +64,7 @@ class Database {
     this.isWriting = true;
     try {
       this.schema.lastUpdated = new Date().toISOString();
-      const tmpPath = `${config.dbFilePath}.tmp`;
-      await fs.promises.writeFile(tmpPath, JSON.stringify(this.schema, null, 2), 'utf-8');
-      await fs.promises.rename(tmpPath, config.dbFilePath);
+      await fs.promises.writeFile(config.dbFilePath, JSON.stringify(this.schema, null, 2), 'utf-8');
     } catch (error) {
       console.error('[Database] Error saving database file:', error);
     } finally {

@@ -146,11 +146,14 @@ export default function App() {
     }
   }, [theme]);
 
-  // Save profile
+  // Save profile with debounce
   useEffect(() => {
     if (!userProfile.phone) return;
     localStorage.setItem('ds_active_profile', JSON.stringify(userProfile));
-    void saveProfile(userProfile);
+    const timer = setTimeout(() => {
+      void saveProfile(userProfile);
+    }, 400);
+    return () => clearTimeout(timer);
   }, [userProfile]);
 
   // Synchronize dynamic accessible font size across entire DOM (excluding intro page)
