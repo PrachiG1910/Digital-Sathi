@@ -1,4 +1,5 @@
 import { LanguageCode } from '../types';
+import { apiUrl } from './api';
 
 class SpeechService {
   private synth: SpeechSynthesis | null = null;
@@ -306,7 +307,7 @@ class SpeechService {
 
       // Pre-create Audio objects for all chunks to preload audio data and eliminate gap latency
       const audioElements = chunks.map((chunk) => {
-        const url = `/api/tts?lang=${encodeURIComponent(targetLang)}&text=${encodeURIComponent(chunk)}`;
+        const url = apiUrl(`/api/tts?lang=${encodeURIComponent(targetLang)}&text=${encodeURIComponent(chunk)}`);
         const audio = new Audio(url);
         audio.preload = 'auto';
         audio.volume = 1.0;

@@ -58,6 +58,8 @@ async function getLocal(phone: string): Promise<UserProfile | null> {
   return saved ? JSON.parse(saved) : null;
 }
 
+import { apiUrl } from './api';
+
 // Public API: saveProfile (Offline-first + Cloud synchronization)
 export async function saveProfile(profile: UserProfile): Promise<void> {
   // 1. Immediately save locally for instantaneous response and offline safety
@@ -68,7 +70,7 @@ export async function saveProfile(profile: UserProfile): Promise<void> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    const res = await fetch(`/api/users/${encodeURIComponent(profile.phone)}`, {
+    const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(profile.phone)}`), {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(profile),
@@ -96,7 +98,7 @@ export async function getProfile(phone: string): Promise<UserProfile | null> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 1200);
 
-    const res = await fetch(`/api/users/${encodeURIComponent(cleanPhone)}`, {
+    const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(cleanPhone)}`), {
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -137,7 +139,7 @@ export async function deleteProfile(phone: string): Promise<void> {
 
   // Also notify backend
   try {
-    fetch(`/api/users/${encodeURIComponent(cleanPhone)}`, {
+    fetch(apiUrl(`/api/users/${encodeURIComponent(cleanPhone)}`), {
       method: 'DELETE',
     }).catch(() => {});
   } catch {

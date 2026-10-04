@@ -3,6 +3,7 @@ import { HelpCircle, Volume2, ArrowLeft, Home, Phone, X, AlertTriangle, HeartHan
 import { LanguageCode } from '../types';
 import { translations } from '../data/translations';
 import { speechService } from '../services/speech';
+import { apiUrl } from '../services/api';
 
 interface HelpDrawerProps {
   isOpen: boolean;
@@ -115,7 +116,7 @@ export const HelpDrawer: React.FC<HelpDrawerProps> = ({
                   setFamilyAlertSent(true);
                   // Notify backend emergency endpoint
                   try {
-                    fetch('/api/help/alert', {
+                    fetch(apiUrl('/api/help/alert'), {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({
