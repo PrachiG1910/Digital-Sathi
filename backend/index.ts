@@ -4,7 +4,7 @@ import fs from 'fs';
 import { config } from './config';
 import { corsMiddleware } from './middleware/cors';
 import { errorHandler } from './middleware/errorHandler';
-import { connectMongoDB } from './db/mongodb';
+import { connectMongoDB, isMongoDBConnected } from './db/mongodb';
 import { db } from './db/database';
 import { authRouter } from './routes/auth';
 import { usersRouter } from './routes/users';
@@ -34,14 +34,15 @@ if (config.isDev) {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const dbConnected = isMongoDBConnected();
   res.status(200).json({
-    status: 'online',
+    status: dbConnected ? 'online' : 'degraded',
     appName: 'Digital Sathi Backend',
     version: '2.0.0',
     database: {
       type: 'MongoDB',
       dbName: config.dbName,
-      status: 'connected',
+      status: dbConnected ? 'connected' : 'disconnected',
     },
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
@@ -81,31 +82,42 @@ if (fs.existsSync(distPath)) {
 // Error handling
 app.use(errorHandler);
 
-// Connect to MongoDB and start server
+// Start server and initialize MongoDB connection
 async function startServer() {
+  // 1. Start Express listener first so Render health check and port binding succeed immediately
+  const server = app.listen(config.port, config.host, () => {
+    console.log(`=======================================================`);
+    console.log(`🚀 Digital Sathi Backend running on http://${config.host}:${config.port}`);
+    console.log(`📦 MongoDB Database: ${config.dbName}`);
+    console.log(`📡 Health Check:     http://localhost:${config.port}/api/health`);
+    console.log(`👥 Users API:        http://localhost:${config.port}/api/users`);
+    console.log(`🗣️ TTS Audio:        http://localhost:${config.port}/api/tts`);
+    console.log(`🤖 AI Sathi:         http://localhost:${config.port}/api/ai/ask`);
+    console.log(`=======================================================`);
+  });
+
+  // 2. Connect to MongoDB Atlas / local instance
+  console.log('Connecting to MongoDB...');
   try {
-    // 1. Establish MongoDB connection
-    console.log('Connecting to MongoDB...');
     await connectMongoDB();
-
-    // 2. Migrate any legacy data from local files if present
     await db.migrateLegacyData();
-
-    // 3. Start Express server
-    app.listen(config.port, config.host, () => {
-      console.log(`=======================================================`);
-      console.log(`🚀 Digital Sathi Backend running on http://${config.host}:${config.port}`);
-      console.log(`📦 MongoDB Database: ${config.dbName}`);
-      console.log(`📡 Health Check:     http://localhost:${config.port}/api/health`);
-      console.log(`👥 Users API:        http://localhost:${config.port}/api/users`);
-      console.log(`🗣️ TTS Audio:        http://localhost:${config.port}/api/tts`);
-      console.log(`🤖 AI Sathi:         http://localhost:${config.port}/api/ai/ask`);
-      console.log(`=======================================================`);
-    });
   } catch (error: any) {
-    console.error('❌ Server startup failed due to database connection error:', error?.message || error);
-    process.exit(1);
+    console.error('⚠️ Initial database connection attempt failed:', error?.message || error);
+    console.warn('⚡ The HTTP server remains online to respond to health checks.');
+    console.warn('🔄 Retrying MongoDB connection in background...');
+
+    const retryInterval = setInterval(async () => {
+      try {
+        await connectMongoDB();
+        await db.migrateLegacyData();
+        clearInterval(retryInterval);
+      } catch {
+        // Continue retrying periodically
+      }
+    }, 10000);
   }
+
+  return server;
 }
 
 startServer();
