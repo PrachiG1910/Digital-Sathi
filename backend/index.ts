@@ -4,6 +4,8 @@ import fs from 'fs';
 import { config } from './config';
 import { corsMiddleware } from './middleware/cors';
 import { errorHandler } from './middleware/errorHandler';
+import { connectMongoDB } from './db/mongodb';
+import { db } from './db/database';
 import { authRouter } from './routes/auth';
 import { usersRouter } from './routes/users';
 import { ttsRouter } from './routes/tts';
@@ -36,6 +38,11 @@ app.get('/api/health', (req, res) => {
     status: 'online',
     appName: 'Digital Sathi Backend',
     version: '2.0.0',
+    database: {
+      type: 'MongoDB',
+      dbName: config.dbName,
+      status: 'connected',
+    },
     timestamp: new Date().toISOString(),
     uptimeSeconds: Math.floor(process.uptime()),
     features: {
@@ -74,15 +81,33 @@ if (fs.existsSync(distPath)) {
 // Error handling
 app.use(errorHandler);
 
-// Start server
-app.listen(config.port, config.host, () => {
-  console.log(`=======================================================`);
-  console.log(`🚀 Digital Sathi Backend running on http://${config.host}:${config.port}`);
-  console.log(`📡 Health Check: http://localhost:${config.port}/api/health`);
-  console.log(`👥 Users API:    http://localhost:${config.port}/api/users`);
-  console.log(`🗣️ TTS Audio:    http://localhost:${config.port}/api/tts`);
-  console.log(`🤖 AI Sathi:     http://localhost:${config.port}/api/ai/ask`);
-  console.log(`=======================================================`);
-});
+// Connect to MongoDB and start server
+async function startServer() {
+  try {
+    // 1. Establish MongoDB connection
+    console.log('Connecting to MongoDB...');
+    await connectMongoDB();
+
+    // 2. Migrate any legacy data from local files if present
+    await db.migrateLegacyData();
+
+    // 3. Start Express server
+    app.listen(config.port, config.host, () => {
+      console.log(`=======================================================`);
+      console.log(`🚀 Digital Sathi Backend running on http://${config.host}:${config.port}`);
+      console.log(`📦 MongoDB Database: ${config.dbName}`);
+      console.log(`📡 Health Check:     http://localhost:${config.port}/api/health`);
+      console.log(`👥 Users API:        http://localhost:${config.port}/api/users`);
+      console.log(`🗣️ TTS Audio:        http://localhost:${config.port}/api/tts`);
+      console.log(`🤖 AI Sathi:         http://localhost:${config.port}/api/ai/ask`);
+      console.log(`=======================================================`);
+    });
+  } catch (error: any) {
+    console.error('❌ Server startup failed due to database connection error:', error?.message || error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

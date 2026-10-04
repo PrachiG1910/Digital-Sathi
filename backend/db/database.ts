@@ -1,84 +1,85 @@
 import fs from 'fs';
-import path from 'path';
+import { getDB } from './mongodb';
 import { config } from '../config';
-import { DatabaseSchema, UserRecord, AlertRecord } from './types';
-
-const defaultSchema: DatabaseSchema = {
-  version: 1,
-  lastUpdated: new Date().toISOString(),
-  users: {},
-  alerts: [],
-};
+import { UserRecord, AlertRecord, DatabaseSchema } from './types';
 
 class Database {
-  private schema: DatabaseSchema = defaultSchema;
-  private isLoaded = false;
-  private isWriting = false;
-  private writePending = false;
-
-  constructor() {
-    this.ensureDataDirectory();
-    this.load();
+  private get usersCollection() {
+    return getDB().collection<UserRecord>('users');
   }
 
-  private ensureDataDirectory() {
-    const dir = path.dirname(config.dbFilePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+  private get alertsCollection() {
+    return getDB().collection<AlertRecord>('alerts');
   }
 
-  private load() {
+  /**
+   * Migrate any legacy file data from ds_database.json into MongoDB if not already present.
+   */
+  public async migrateLegacyData(): Promise<void> {
     try {
-      if (fs.existsSync(config.dbFilePath)) {
-        const raw = fs.readFileSync(config.dbFilePath, 'utf-8');
-        this.schema = JSON.parse(raw);
-      } else {
-        this.schema = { ...defaultSchema };
-        this.saveSync();
+      if (!fs.existsSync(config.dbFilePath)) {
+        return;
       }
-      this.isLoaded = true;
-    } catch (error) {
-      console.warn('[Database] Failed to read database file, initializing with empty state:', error);
-      this.schema = { ...defaultSchema };
-      this.saveSync();
-      this.isLoaded = true;
-    }
-  }
 
-  private saveSync() {
-    try {
-      this.schema.lastUpdated = new Date().toISOString();
-      fs.writeFileSync(config.dbFilePath, JSON.stringify(this.schema, null, 2), 'utf-8');
-    } catch (error) {
-      console.error('[Database] Failed to write database synchronously:', error);
-    }
-  }
+      const raw = fs.readFileSync(config.dbFilePath, 'utf-8');
+      const schema: DatabaseSchema = JSON.parse(raw);
 
-  private async flush(): Promise<void> {
-    if (this.isWriting) {
-      this.writePending = true;
-      return;
-    }
-
-    this.isWriting = true;
-    try {
-      this.schema.lastUpdated = new Date().toISOString();
-      await fs.promises.writeFile(config.dbFilePath, JSON.stringify(this.schema, null, 2), 'utf-8');
-    } catch (error) {
-      console.error('[Database] Error saving database file:', error);
-    } finally {
-      this.isWriting = false;
-      if (this.writePending) {
-        this.writePending = false;
-        await this.flush();
+      if (schema.users && typeof schema.users === 'object') {
+        const legacyUsers = Object.values(schema.users);
+        for (const user of legacyUsers) {
+          if (!user || !user.phone) continue;
+          const cleanPhone = user.phone.trim();
+          const existing = await this.usersCollection.findOne({ phone: cleanPhone });
+          if (!existing) {
+            await this.usersCollection.insertOne({
+              phone: cleanPhone,
+              name: user.name || 'Learner',
+              language: user.language || 'hi',
+              completedLessons: user.completedLessons || [],
+              completedPractices: user.completedPractices || [],
+              practiceScore: typeof user.practiceScore === 'number' ? user.practiceScore : 0,
+              voiceRate: typeof user.voiceRate === 'number' ? user.voiceRate : 0.85,
+              fontSize: user.fontSize || 'large',
+              createdAt: user.createdAt || new Date().toISOString(),
+              updatedAt: user.updatedAt || new Date().toISOString(),
+              lastLoginAt: user.lastLoginAt || new Date().toISOString(),
+            });
+            console.log(`[Migration] Migrated legacy user ${cleanPhone} (${user.name}) to MongoDB`);
+          }
+        }
       }
+
+      if (Array.isArray(schema.alerts)) {
+        for (const alert of schema.alerts) {
+          if (!alert || !alert.id) continue;
+          const existing = await this.alertsCollection.findOne({ id: alert.id });
+          if (!existing) {
+            await this.alertsCollection.insertOne({
+              id: alert.id,
+              phone: alert.phone || 'NotProvided',
+              name: alert.name || 'Learner',
+              alertType: alert.alertType || 'family_help',
+              message: alert.message,
+              createdAt: alert.createdAt || new Date().toISOString(),
+              status: alert.status || 'sent',
+            });
+          }
+        }
+      }
+
+      console.log('✅ Legacy data check and migration to MongoDB complete.');
+    } catch (error) {
+      console.warn('[Migration] Note: Legacy migration skipped or not needed:', error);
     }
   }
 
   public async getUser(phone: string): Promise<UserRecord | null> {
     const cleanPhone = phone.trim();
-    return this.schema.users[cleanPhone] || null;
+    const doc = await this.usersCollection.findOne(
+      { phone: cleanPhone },
+      { projection: { _id: 0 } }
+    );
+    return doc || null;
   }
 
   public async createUser(data: {
@@ -89,23 +90,45 @@ class Database {
     fontSize?: 'normal' | 'large' | 'xlarge';
   }): Promise<UserRecord> {
     const cleanPhone = data.phone.trim();
+    const cleanName = data.name.trim();
     const now = new Date().toISOString();
 
-    const existing = this.schema.users[cleanPhone];
+    const existing = await this.getUser(cleanPhone);
     if (existing) {
-      existing.name = data.name.trim() || existing.name;
-      existing.language = data.language || existing.language;
-      if (data.voiceRate !== undefined) existing.voiceRate = data.voiceRate;
-      if (data.fontSize !== undefined) existing.fontSize = data.fontSize;
-      existing.updatedAt = now;
-      existing.lastLoginAt = now;
-      await this.flush();
-      return existing;
+      const updatedName = cleanName || existing.name;
+      const updatedLanguage = data.language || existing.language;
+      const updatedVoiceRate = data.voiceRate !== undefined ? data.voiceRate : existing.voiceRate;
+      const updatedFontSize = data.fontSize !== undefined ? data.fontSize : existing.fontSize;
+
+      const updated = await this.usersCollection.findOneAndUpdate(
+        { phone: cleanPhone },
+        {
+          $set: {
+            name: updatedName,
+            language: updatedLanguage,
+            voiceRate: updatedVoiceRate,
+            fontSize: updatedFontSize,
+            updatedAt: now,
+            lastLoginAt: now,
+          },
+        },
+        { returnDocument: 'after', projection: { _id: 0 } }
+      );
+
+      return updated || {
+        ...existing,
+        name: updatedName,
+        language: updatedLanguage,
+        voiceRate: updatedVoiceRate,
+        fontSize: updatedFontSize,
+        updatedAt: now,
+        lastLoginAt: now,
+      };
     }
 
     const newUser: UserRecord = {
       phone: cleanPhone,
-      name: data.name.trim(),
+      name: cleanName,
       language: data.language || 'hi',
       completedLessons: [],
       completedPractices: [],
@@ -117,8 +140,7 @@ class Database {
       lastLoginAt: now,
     };
 
-    this.schema.users[cleanPhone] = newUser;
-    await this.flush();
+    await this.usersCollection.insertOne({ ...newUser });
     return newUser;
   }
 
@@ -127,23 +149,28 @@ class Database {
     updates: Partial<Omit<UserRecord, 'phone' | 'createdAt'>>
   ): Promise<UserRecord | null> {
     const cleanPhone = phone.trim();
-    const user = this.schema.users[cleanPhone];
-    if (!user) return null;
+    const now = new Date().toISOString();
 
-    if (updates.name !== undefined) user.name = updates.name.trim();
-    if (updates.language !== undefined) user.language = updates.language;
-    if (updates.voiceRate !== undefined) user.voiceRate = updates.voiceRate;
-    if (updates.fontSize !== undefined) user.fontSize = updates.fontSize;
-    if (updates.completedLessons !== undefined) user.completedLessons = updates.completedLessons;
-    if (updates.completedPractices !== undefined) user.completedPractices = updates.completedPractices;
+    const setFields: Record<string, any> = { updatedAt: now };
+
+    if (updates.name !== undefined) setFields.name = updates.name.trim();
+    if (updates.language !== undefined) setFields.language = updates.language;
+    if (updates.voiceRate !== undefined) setFields.voiceRate = updates.voiceRate;
+    if (updates.fontSize !== undefined) setFields.fontSize = updates.fontSize;
+    if (updates.completedLessons !== undefined) setFields.completedLessons = updates.completedLessons;
+    if (updates.completedPractices !== undefined) setFields.completedPractices = updates.completedPractices;
     if (updates.practiceScore !== undefined) {
-      user.practiceScore = Math.min(100, Math.max(0, updates.practiceScore));
+      setFields.practiceScore = Math.min(100, Math.max(0, updates.practiceScore));
     }
-    if (updates.lastLoginAt !== undefined) user.lastLoginAt = updates.lastLoginAt;
+    if (updates.lastLoginAt !== undefined) setFields.lastLoginAt = updates.lastLoginAt;
 
-    user.updatedAt = new Date().toISOString();
-    await this.flush();
-    return user;
+    const result = await this.usersCollection.findOneAndUpdate(
+      { phone: cleanPhone },
+      { $set: setFields },
+      { returnDocument: 'after', projection: { _id: 0 } }
+    );
+
+    return result || null;
   }
 
   public async recordProgress(
@@ -156,40 +183,49 @@ class Database {
     }
   ): Promise<UserRecord | null> {
     const cleanPhone = phone.trim();
-    const user = this.schema.users[cleanPhone];
+    const user = await this.getUser(cleanPhone);
     if (!user) return null;
 
-    if (data.lessonId && !user.completedLessons.includes(data.lessonId)) {
-      user.completedLessons.push(data.lessonId);
+    const updateOps: Record<string, any> = {
+      $set: { updatedAt: new Date().toISOString() },
+    };
+
+    if (data.lessonId) {
+      updateOps.$addToSet = { ...updateOps.$addToSet, completedLessons: data.lessonId };
     }
 
-    if (data.practiceId && !user.completedPractices.includes(data.practiceId)) {
-      user.completedPractices.push(data.practiceId);
+    if (data.practiceId) {
+      updateOps.$addToSet = { ...updateOps.$addToSet, completedPractices: data.practiceId };
     }
 
     if (data.practiceScore !== undefined) {
-      user.practiceScore = Math.min(100, Math.max(0, data.practiceScore));
+      updateOps.$set.practiceScore = Math.min(100, Math.max(0, data.practiceScore));
     } else if (data.addScore !== undefined) {
-      user.practiceScore = Math.min(100, Math.max(0, user.practiceScore + data.addScore));
+      updateOps.$set.practiceScore = Math.min(100, Math.max(0, user.practiceScore + data.addScore));
     }
 
-    user.updatedAt = new Date().toISOString();
-    await this.flush();
-    return user;
+    const result = await this.usersCollection.findOneAndUpdate(
+      { phone: cleanPhone },
+      updateOps,
+      { returnDocument: 'after', projection: { _id: 0 } }
+    );
+
+    return result || null;
   }
 
   public async deleteUser(phone: string): Promise<boolean> {
     const cleanPhone = phone.trim();
-    if (!this.schema.users[cleanPhone]) return false;
-    delete this.schema.users[cleanPhone];
-    await this.flush();
-    return true;
+    const res = await this.usersCollection.deleteOne({ phone: cleanPhone });
+    return res.deletedCount > 0;
   }
 
   public async listUsers(): Promise<UserRecord[]> {
-    return Object.values(this.schema.users).sort(
-      (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    );
+    const users = await this.usersCollection
+      .find({}, { projection: { _id: 0 } })
+      .sort({ updatedAt: -1 })
+      .toArray();
+
+    return users;
   }
 
   public async recordAlert(data: {
@@ -208,22 +244,18 @@ class Database {
       status: 'sent',
     };
 
-    this.schema.alerts.push(record);
-    // Keep max 200 alerts
-    if (this.schema.alerts.length > 200) {
-      this.schema.alerts = this.schema.alerts.slice(-200);
-    }
-
-    await this.flush();
+    await this.alertsCollection.insertOne({ ...record });
     return record;
   }
 
   public async getAlerts(phone?: string): Promise<AlertRecord[]> {
-    if (phone) {
-      const cleanPhone = phone.trim();
-      return this.schema.alerts.filter((a) => a.phone === cleanPhone);
-    }
-    return [...this.schema.alerts].reverse();
+    const filter = phone ? { phone: phone.trim() } : {};
+    const alerts = await this.alertsCollection
+      .find(filter, { projection: { _id: 0 } })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return alerts;
   }
 }
 

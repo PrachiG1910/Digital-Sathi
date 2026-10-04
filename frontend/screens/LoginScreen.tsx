@@ -83,8 +83,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         lang === 'hi'
           ? 'डिजिटल साथी में आपका स्वागत है! कृपया अपना नाम और 10 अंकों का मोबाइल नंबर लिखें। पासवर्ड की कोई जरूरत नहीं है।'
           : lang === 'mr'
-          ? 'डिजिटल साथीमध्ये आपले स्वागत आहे! कृपया आपले नाव आणि १० अंकी मोबाईल नंबर टाका. पासवर्डची आवश्यकता नाही.'
-          : 'Welcome to Digital Sathi! Please enter your full name and 10-digit mobile number. No password is required.';
+            ? 'डिजिटल साथीमध्ये आपले स्वागत आहे! कृपया आपले नाव आणि १० अंकी मोबाईल नंबर टाका. पासवर्डची आवश्यकता नाही.'
+            : 'Welcome to Digital Sathi! Please enter your full name and 10-digit mobile number. No password is required.';
       speechService.speak(text, lang);
       setIsSpeaking(true);
     }
@@ -120,9 +120,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     const profile: UserProfile = existing && action === 'login'
       ? { ...existing, name: cleanName || existing.name, language: lang }
       : {
-          name: cleanName, phone: cleanPhone, language: lang, completedLessons: [],
-          completedPractices: [], practiceScore: 0, voiceRate: 0.85, fontSize: 'large',
-        };
+        name: cleanName, phone: cleanPhone, language: lang, completedLessons: [],
+        completedPractices: [], practiceScore: 0, voiceRate: 0.85, fontSize: 'large',
+      };
 
     await saveProfile(profile);
     localStorage.setItem('ds_active_profile', JSON.stringify(profile));
@@ -134,22 +134,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   return (
     <div
       id="screen-login-signup"
-      className={`min-h-screen w-full flex flex-col justify-between p-4 sm:p-8 relative overflow-hidden transition-colors duration-300 ${
-        isDark
+      className={`min-h-screen w-full flex flex-col justify-between p-4 sm:p-8 relative overflow-hidden transition-colors duration-300 ${isDark
           ? 'bg-[#0F172A] text-slate-100'
           : 'bg-[#FAF7F2] text-[#0F172A]'
-      }`}
+        }`}
     >
       {/* Ambient background glow accents matching Intro page */}
       <div
-        className={`absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-opacity ${
-          isDark ? 'bg-[#0D5C5A]/30 opacity-60' : 'bg-[#0D5C5A]/10 opacity-70'
-        }`}
+        className={`absolute top-1/4 -left-20 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-opacity ${isDark ? 'bg-[#0D5C5A]/30 opacity-60' : 'bg-[#0D5C5A]/10 opacity-70'
+          }`}
       />
       <div
-        className={`absolute bottom-1/4 -right-20 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-opacity ${
-          isDark ? 'bg-[#D96B43]/25 opacity-60' : 'bg-[#D96B43]/12 opacity-80'
-        }`}
+        className={`absolute bottom-1/4 -right-20 w-96 h-96 rounded-full blur-3xl pointer-events-none transition-opacity ${isDark ? 'bg-[#D96B43]/25 opacity-60' : 'bg-[#D96B43]/12 opacity-80'
+          }`}
       />
 
       {/* Top Header with Theme Toggle & Listen Button */}
@@ -175,11 +172,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               id="btn-login-theme-toggle"
               type="button"
               onClick={onToggleTheme}
-              className={`btn-tactile py-2 px-2.5 sm:px-3 rounded-2xl border text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors ${
-                isDark
+              className={`btn-tactile py-2 px-2.5 sm:px-3 rounded-2xl border text-xs sm:text-sm font-bold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors ${isDark
                   ? 'bg-slate-800 text-amber-300 border-slate-700 hover:bg-slate-700'
                   : 'bg-white text-[#0D5C5A] border-slate-200 hover:bg-slate-50'
-              }`}
+                }`}
               title="Toggle Bright/Dark Mode"
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[#0D5C5A]" />}
@@ -192,13 +188,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             id="btn-login-listen"
             type="button"
             onClick={handleReadScreen}
-            className={`btn-tactile py-2 px-2.5 sm:px-3.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs cursor-pointer transition-all ${
-              isSpeaking
+            className={`btn-tactile py-2 px-2.5 sm:px-3.5 rounded-2xl border-2 font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-xs cursor-pointer transition-all ${isSpeaking
                 ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md animate-pulse'
                 : isDark
-                ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                : 'bg-white text-[#0D5C5A] border-[#0D5C5A]/25 hover:border-[#0D5C5A]'
-            }`}
+                  ? 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                  : 'bg-white text-[#0D5C5A] border-[#0D5C5A]/25 hover:border-[#0D5C5A]'
+              }`}
           >
             {isSpeaking ? <VolumeX className="w-4 h-4 text-slate-950" /> : <Volume2 className="w-4 h-4 text-[#D96B43]" />}
             <span className="truncate max-w-[120px] sm:max-w-none">{t.listenToThis}</span>
@@ -209,11 +204,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       {/* Main Form Card with Intro Styling */}
       <div className="w-full max-w-xl mx-auto my-auto py-2 sm:py-4 z-10 animate-slide-in-up">
         <div
-          className={`p-5 sm:p-10 rounded-3xl border-2 shadow-2xl relative overflow-hidden transition-all ${
-            isDark
+          className={`p-5 sm:p-10 rounded-3xl border-2 shadow-2xl relative overflow-hidden transition-all ${isDark
               ? 'bg-slate-900/90 border-slate-700 text-white'
               : 'bg-white border-[#0D5C5A]/15 text-[#0F172A]'
-          }`}
+            }`}
         >
           {/* Top Decorative Ribbon */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#0D5C5A] via-[#D96B43] to-[#0D5C5A]" />
@@ -237,11 +231,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <button
               type="button"
               onClick={handleQuickFill}
-              className={`btn-tactile py-2 px-4 rounded-xl border font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs cursor-pointer ${
-                isDark
+              className={`btn-tactile py-2 px-4 rounded-xl border font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs cursor-pointer ${isDark
                   ? 'bg-amber-950/40 border-amber-500/30 text-amber-300 hover:bg-amber-900/40'
                   : 'bg-amber-50 hover:bg-amber-100/80 border-amber-300/80 text-amber-900'
-              }`}
+                }`}
             >
               <Sparkles className="w-4 h-4 text-amber-500" />
               <span>{t.quickFillBtn} ({demoName})</span>
@@ -272,9 +265,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
             <div>
               <label
                 htmlFor="input-full-name"
-                className={`block text-base sm:text-lg font-extrabold mb-2 flex items-center gap-2 ${
-                  isDark ? 'text-slate-200' : 'text-slate-800'
-                }`}
+                className={`block text-base sm:text-lg font-extrabold mb-2 flex items-center gap-2 ${isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}
               >
                 <User className="w-5 h-5 text-[#D96B43]" />
                 <span>{t.fullNameLabel}</span>
@@ -288,20 +280,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   setErrorMsg('');
                 }}
                 placeholder={namePlaceholder}
-                className={`w-full p-4 rounded-2xl border-2 text-lg sm:text-xl font-bold outline-none transition-all shadow-inner ${
-                  isDark
+                className={`w-full p-4 rounded-2xl border-2 text-lg sm:text-xl font-bold outline-none transition-all shadow-inner ${isDark
                     ? 'bg-slate-800/90 border-slate-700 text-white focus:border-[#D96B43] focus:bg-slate-800'
                     : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-[#0D5C5A] focus:bg-white'
-                }`}
+                  }`}
               />
             </div>
 
             <div>
               <label
                 htmlFor="input-phone-number"
-                className={`block text-base sm:text-lg font-extrabold mb-2 flex items-center gap-2 ${
-                  isDark ? 'text-slate-200' : 'text-slate-800'
-                }`}
+                className={`block text-base sm:text-lg font-extrabold mb-2 flex items-center gap-2 ${isDark ? 'text-slate-200' : 'text-slate-800'
+                  }`}
               >
                 <Phone className="w-5 h-5 text-[#D96B43]" />
                 <span>{t.phoneLabel}</span>
@@ -317,11 +307,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={phonePlaceholder}
-                  className={`w-full pl-16 pr-4 py-4 rounded-2xl border-2 text-lg sm:text-xl font-bold outline-none transition-all shadow-inner tracking-wider ${
-                    isDark
+                  className={`w-full pl-16 pr-4 py-4 rounded-2xl border-2 text-lg sm:text-xl font-bold outline-none transition-all shadow-inner tracking-wider ${isDark
                       ? 'bg-slate-800/90 border-slate-700 text-white focus:border-[#D96B43] focus:bg-slate-800'
                       : 'bg-slate-50 border-slate-200 text-slate-900 focus:border-[#0D5C5A] focus:bg-white'
-                  }`}
+                    }`}
                 />
               </div>
               <p className={`mt-2 text-xs font-semibold flex items-center gap-1.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
@@ -347,20 +336,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               id="btn-login-existing"
               type="button"
               onClick={() => handleSubmit('login')}
-              className={`btn-tactile py-4 px-6 rounded-2xl border font-extrabold text-base sm:text-lg flex items-center justify-center transition-colors cursor-pointer ${
-                isDark
+              className={`btn-tactile py-4 px-6 rounded-2xl border font-extrabold text-base sm:text-lg flex items-center justify-center transition-colors cursor-pointer ${isDark
                   ? 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
                   : 'bg-slate-100 hover:bg-slate-200/80 text-slate-800 border-slate-200'
-              }`}
+                }`}
             >
               <span>{t.loginBtn}</span>
             </button>
           </div>
 
           {/* Privacy & Safety Guarantee */}
-          <div className={`mt-7 pt-4 border-t flex items-center justify-center gap-2 text-xs font-bold ${
-            isDark ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-500'
-          }`}>
+          <div className={`mt-7 pt-4 border-t flex items-center justify-center gap-2 text-xs font-bold ${isDark ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-500'
+            }`}>
             <ShieldCheck className="w-4 h-4 text-teal-400" />
             <span>{lang === 'en' ? '100% Secure & Senior Friendly' : '१००% सुरक्षित एवं बुजुर्गों के लिए अनुकूल'}</span>
           </div>

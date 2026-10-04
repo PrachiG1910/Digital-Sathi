@@ -63,23 +63,27 @@ export async function saveProfile(profile: UserProfile): Promise<void> {
   // 1. Immediately save locally for instantaneous response and offline safety
   await saveLocal(profile);
 
-  // 2. Asynchronously sync to backend server if reachable
+  // 2. Sync to backend server
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-    fetch(`/api/users/${encodeURIComponent(profile.phone)}`, {
+    const res = await fetch(`/api/users/${encodeURIComponent(profile.phone)}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(profile),
       signal: controller.signal,
-    })
-      .then(() => clearTimeout(timeoutId))
-      .catch(() => {
-        // Backend not available or offline; safely ignored
-      });
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.profile) {
+        await saveLocal(data.profile);
+      }
+    }
   } catch {
-    // Safely ignore network errors
+    // Backend temporarily unreachable; offline local data remains safe
   }
 }
 
