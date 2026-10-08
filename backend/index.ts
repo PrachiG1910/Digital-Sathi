@@ -20,6 +20,17 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Ensure MongoDB connection for all /api requests
+app.use('/api', async (req, res, next) => {
+  try {
+    await connectMongoDB();
+    next();
+  } catch (error: any) {
+    console.error('Database connection error in API route:', error?.message || error);
+    next();
+  }
+});
+
 // Request logging in development
 if (config.isDev) {
   app.use((req, res, next) => {
@@ -82,9 +93,8 @@ if (fs.existsSync(distPath)) {
 // Error handling
 app.use(errorHandler);
 
-// Start server and initialize MongoDB connection
+// Start server and initialize MongoDB connection when not in serverless runtime
 async function startServer() {
-  // 1. Start Express listener first so Render health check and port binding succeed immediately
   const server = app.listen(config.port, config.host, () => {
     console.log(`=======================================================`);
     console.log(`🚀 Digital Sathi Backend running on http://${config.host}:${config.port}`);
@@ -96,7 +106,6 @@ async function startServer() {
     console.log(`=======================================================`);
   });
 
-  // 2. Connect to MongoDB Atlas / local instance
   console.log('Connecting to MongoDB...');
   try {
     await connectMongoDB();
@@ -120,6 +129,8 @@ async function startServer() {
   return server;
 }
 
-startServer();
+if (process.env.VERCEL !== '1' && !process.env.NOW_REGION) {
+  startServer();
+}
 
 export default app;

@@ -15,7 +15,7 @@ import {
 import { LanguageCode, UserProfile } from '../types';
 import { translations } from '../data/translations';
 import { speechService } from '../services/speech';
-import { getProfile, saveProfile } from '../services/profileDb';
+import { getProfile, saveProfile, registerUser, loginUser } from '../services/profileDb';
 import confetti from 'canvas-confetti';
 
 interface LoginScreenProps {
@@ -101,7 +101,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     const cleanName = name.trim().replace(/\s+/g, ' ');
     const cleanPhone = phone.replace(/\D/g, '');
 
-    if (cleanName.length < 2) {
+    if (action === 'create' && cleanName.length < 2) {
       setErrorMsg(lang === 'en' ? 'Please enter your full name.' : lang === 'mr' ? 'कृपया आपले पूर्ण नाव टाका.' : 'कृपया अपना पूरा नाम लिखें।');
       return;
     }
@@ -111,24 +111,49 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     }
 
     setErrorMsg('');
-    const existing = await getProfile(cleanPhone);
-    if (action === 'login' && !existing) {
-      setErrorMsg(lang === 'en' ? 'No profile was found for this phone number. Create a profile first.' : lang === 'mr' ? 'या नंबरसाठी प्रोफाइल सापडले नाही. आधी प्रोफाइल तयार करा.' : 'इस नंबर के लिए प्रोफाइल नहीं मिला। पहले प्रोफाइल बनाएं।');
-      return;
+
+    if (action === 'create') {
+      const res = await registerUser({
+        name: cleanName || demoName,
+        phone: cleanPhone,
+        language: lang,
+      });
+
+      if (!res.success || !res.profile) {
+        setErrorMsg(res.error || (lang === 'en' ? 'Registration failed. Please try again.' : 'प्रोफाइल बनाने में त्रुटि हुई।'));
+        return;
+      }
+
+      localStorage.setItem('ds_active_profile', JSON.stringify(res.profile));
+      setIsSuccess(true);
+      confetti({ particleCount: 90, spread: 70, origin: { y: 0.65 } });
+      setTimeout(() => onLoginSuccess(res.profile!), 400);
+    } else {
+      // Login flow: Fetch existing user from MongoDB
+      const res = await loginUser(cleanPhone);
+      if (!res.success || !res.profile) {
+        setErrorMsg(
+          res.error ||
+          (lang === 'en'
+            ? 'No profile was found for this phone number. Create a profile first.'
+            : lang === 'mr'
+            ? 'या नंबरसाठी प्रोफाइल सापडले नाही. आधी प्रोफाइल तयार करा.'
+            : 'इस नंबर के लिए प्रोफाइल नहीं मिला। पहले प्रोफाइल बनाएं।')
+        );
+        return;
+      }
+
+      let profileToUse = res.profile;
+      if (cleanName && cleanName !== profileToUse.name) {
+        profileToUse = { ...profileToUse, name: cleanName, language: lang };
+        void saveProfile(profileToUse);
+      }
+
+      localStorage.setItem('ds_active_profile', JSON.stringify(profileToUse));
+      setIsSuccess(true);
+      confetti({ particleCount: 90, spread: 70, origin: { y: 0.65 } });
+      setTimeout(() => onLoginSuccess(profileToUse), 400);
     }
-
-    const profile: UserProfile = existing && action === 'login'
-      ? { ...existing, name: cleanName || existing.name, language: lang }
-      : {
-        name: cleanName, phone: cleanPhone, language: lang, completedLessons: [],
-        completedPractices: [], practiceScore: 0, voiceRate: 0.85, fontSize: 'large',
-      };
-
-    await saveProfile(profile);
-    localStorage.setItem('ds_active_profile', JSON.stringify(profile));
-    setIsSuccess(true);
-    confetti({ particleCount: 90, spread: 70, origin: { y: 0.65 } });
-    setTimeout(() => onLoginSuccess(profile), 400);
   };
 
   return (

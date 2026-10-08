@@ -1,15 +1,17 @@
 import fs from 'fs';
-import { getDB } from './mongodb';
+import { connectMongoDB } from './mongodb';
 import { config } from '../config';
 import { UserRecord, AlertRecord, DatabaseSchema } from './types';
 
 class Database {
-  private get usersCollection() {
-    return getDB().collection<UserRecord>('users');
+  private async getUsersCollection() {
+    const db = await connectMongoDB();
+    return db.collection<UserRecord>('users');
   }
 
-  private get alertsCollection() {
-    return getDB().collection<AlertRecord>('alerts');
+  private async getAlertsCollection() {
+    const db = await connectMongoDB();
+    return db.collection<AlertRecord>('alerts');
   }
 
   /**
@@ -23,15 +25,18 @@ class Database {
 
       const raw = fs.readFileSync(config.dbFilePath, 'utf-8');
       const schema: DatabaseSchema = JSON.parse(raw);
+      const usersCol = await this.getUsersCollection();
+      const alertsCol = await this.getAlertsCollection();
 
       if (schema.users && typeof schema.users === 'object') {
         const legacyUsers = Object.values(schema.users);
         for (const user of legacyUsers) {
           if (!user || !user.phone) continue;
-          const cleanPhone = user.phone.trim();
-          const existing = await this.usersCollection.findOne({ phone: cleanPhone });
+          const cleanPhone = user.phone.trim().replace(/\D/g, '').slice(-10);
+          const existing = await usersCol.findOne({ phone: cleanPhone });
           if (!existing) {
-            await this.usersCollection.insertOne({
+            await usersCol.insertOne({
+              id: user.id || `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
               phone: cleanPhone,
               name: user.name || 'Learner',
               language: user.language || 'hi',
@@ -52,9 +57,9 @@ class Database {
       if (Array.isArray(schema.alerts)) {
         for (const alert of schema.alerts) {
           if (!alert || !alert.id) continue;
-          const existing = await this.alertsCollection.findOne({ id: alert.id });
+          const existing = await alertsCol.findOne({ id: alert.id });
           if (!existing) {
-            await this.alertsCollection.insertOne({
+            await alertsCol.insertOne({
               id: alert.id,
               phone: alert.phone || 'NotProvided',
               name: alert.name || 'Learner',
@@ -74,8 +79,9 @@ class Database {
   }
 
   public async getUser(phone: string): Promise<UserRecord | null> {
-    const cleanPhone = phone.trim();
-    const doc = await this.usersCollection.findOne(
+    const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
+    const collection = await this.getUsersCollection();
+    const doc = await collection.findOne(
       { phone: cleanPhone },
       { projection: { _id: 0 } }
     );
@@ -89,9 +95,10 @@ class Database {
     voiceRate?: number;
     fontSize?: 'normal' | 'large' | 'xlarge';
   }): Promise<UserRecord> {
-    const cleanPhone = data.phone.trim();
-    const cleanName = data.name.trim();
+    const cleanPhone = data.phone.trim().replace(/\D/g, '').slice(-10);
+    const cleanName = data.name.trim().replace(/\s+/g, ' ');
     const now = new Date().toISOString();
+    const collection = await this.getUsersCollection();
 
     const existing = await this.getUser(cleanPhone);
     if (existing) {
@@ -100,7 +107,7 @@ class Database {
       const updatedVoiceRate = data.voiceRate !== undefined ? data.voiceRate : existing.voiceRate;
       const updatedFontSize = data.fontSize !== undefined ? data.fontSize : existing.fontSize;
 
-      const updated = await this.usersCollection.findOneAndUpdate(
+      const updated = await collection.findOneAndUpdate(
         { phone: cleanPhone },
         {
           $set: {
@@ -127,6 +134,7 @@ class Database {
     }
 
     const newUser: UserRecord = {
+      id: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
       phone: cleanPhone,
       name: cleanName,
       language: data.language || 'hi',
@@ -140,7 +148,7 @@ class Database {
       lastLoginAt: now,
     };
 
-    await this.usersCollection.insertOne({ ...newUser });
+    await collection.insertOne({ ...newUser });
     return newUser;
   }
 
@@ -148,8 +156,9 @@ class Database {
     phone: string,
     updates: Partial<Omit<UserRecord, 'phone' | 'createdAt'>>
   ): Promise<UserRecord | null> {
-    const cleanPhone = phone.trim();
+    const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
     const now = new Date().toISOString();
+    const collection = await this.getUsersCollection();
 
     const setFields: Record<string, any> = { updatedAt: now };
 
@@ -164,7 +173,7 @@ class Database {
     }
     if (updates.lastLoginAt !== undefined) setFields.lastLoginAt = updates.lastLoginAt;
 
-    const result = await this.usersCollection.findOneAndUpdate(
+    const result = await collection.findOneAndUpdate(
       { phone: cleanPhone },
       { $set: setFields },
       { returnDocument: 'after', projection: { _id: 0 } }
@@ -182,10 +191,11 @@ class Database {
       addScore?: number;
     }
   ): Promise<UserRecord | null> {
-    const cleanPhone = phone.trim();
+    const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
     const user = await this.getUser(cleanPhone);
     if (!user) return null;
 
+    const collection = await this.getUsersCollection();
     const updateOps: Record<string, any> = {
       $set: { updatedAt: new Date().toISOString() },
     };
@@ -204,7 +214,7 @@ class Database {
       updateOps.$set.practiceScore = Math.min(100, Math.max(0, user.practiceScore + data.addScore));
     }
 
-    const result = await this.usersCollection.findOneAndUpdate(
+    const result = await collection.findOneAndUpdate(
       { phone: cleanPhone },
       updateOps,
       { returnDocument: 'after', projection: { _id: 0 } }
@@ -214,13 +224,15 @@ class Database {
   }
 
   public async deleteUser(phone: string): Promise<boolean> {
-    const cleanPhone = phone.trim();
-    const res = await this.usersCollection.deleteOne({ phone: cleanPhone });
+    const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
+    const collection = await this.getUsersCollection();
+    const res = await collection.deleteOne({ phone: cleanPhone });
     return res.deletedCount > 0;
   }
 
   public async listUsers(): Promise<UserRecord[]> {
-    const users = await this.usersCollection
+    const collection = await this.getUsersCollection();
+    const users = await collection
       .find({}, { projection: { _id: 0 } })
       .sort({ updatedAt: -1 })
       .toArray();
@@ -234,6 +246,7 @@ class Database {
     alertType: 'family_help' | 'emergency';
     message?: string;
   }): Promise<AlertRecord> {
+    const collection = await this.getAlertsCollection();
     const record: AlertRecord = {
       id: `alert-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       phone: data.phone.trim(),
@@ -244,13 +257,14 @@ class Database {
       status: 'sent',
     };
 
-    await this.alertsCollection.insertOne({ ...record });
+    await collection.insertOne({ ...record });
     return record;
   }
 
   public async getAlerts(phone?: string): Promise<AlertRecord[]> {
+    const collection = await this.getAlertsCollection();
     const filter = phone ? { phone: phone.trim() } : {};
-    const alerts = await this.alertsCollection
+    const alerts = await collection
       .find(filter, { projection: { _id: 0 } })
       .sort({ createdAt: -1 })
       .toArray();

@@ -1,6 +1,7 @@
 export type LanguageCode = 'hi' | 'mr' | 'en';
 
 export interface UserRecord {
+  id?: string;
   phone: string;
   name: string;
   language: LanguageCode;
