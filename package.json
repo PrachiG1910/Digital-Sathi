@@ -8,7 +8,7 @@
     "server": "tsx backend/index.ts",
     "server:watch": "tsx watch backend/index.ts",
     "start": "tsx backend/index.ts",
-    "build": "vite build && esbuild api/index.ts --bundle --platform=node --format=esm --outfile=api/index.js --external:mongodb",
+    "build": "vite build && esbuild backend/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=api/index.js --external:mongodb --banner:js=\"import { createRequire } from 'module'; const require = createRequire(import.meta.url);\"",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
