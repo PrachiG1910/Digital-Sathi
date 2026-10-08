@@ -8,7 +8,7 @@
     "server": "tsx backend/index.ts",
     "server:watch": "tsx watch backend/index.ts",
     "start": "tsx backend/index.ts",
-    "build": "vite build",
+    "build": "vite build && esbuild api/index.ts --bundle --platform=node --format=esm --outfile=api/index.js --external:mongodb",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit"
