@@ -141,7 +141,13 @@ async function startServer() {
   return server;
 }
 
-if (process.env.VERCEL !== '1' && !process.env.NOW_REGION && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+const isServerlessRuntime =
+  process.env.VERCEL === '1' ||
+  Boolean(process.env.VERCEL_ENV) ||
+  Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+  Boolean(process.env.NOW_REGION);
+
+if (!isServerlessRuntime) {
   startServer();
 }
 

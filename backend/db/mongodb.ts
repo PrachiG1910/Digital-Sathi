@@ -18,9 +18,17 @@ export async function connectMongoDB(): Promise<Db | null> {
   const uri = config.mongoUri;
   const dbName = config.dbName;
 
+  const isLocalUri = !uri || uri.includes('127.0.0.1') || uri.includes('localhost');
+  const isServerlessOrCloud =
+    process.env.VERCEL === '1' ||
+    Boolean(process.env.VERCEL_ENV) ||
+    Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) ||
+    Boolean(process.env.NOW_REGION) ||
+    process.env.NODE_ENV === 'production';
+
   // In production / Vercel, prevent trying to connect to non-existent local loopback
-  if (!uri || (process.env.VERCEL === '1' && (uri.includes('127.0.0.1') || uri.includes('localhost')))) {
-    console.warn('[MongoDB] MONGODB_URI is not set in Vercel Environment Variables.');
+  if (isLocalUri && isServerlessOrCloud) {
+    console.warn('[MongoDB] MONGODB_URI is not set in Vercel Environment Variables. Please configure MONGODB_URI in Vercel dashboard.');
     return null;
   }
 
@@ -61,7 +69,7 @@ export async function connectMongoDB(): Promise<Db | null> {
       database = null;
       clientPromise = null;
       console.error('❌ [AUTH] MongoDB connection failed:', error?.message || error);
-      throw error;
+      return null;
     }
   })();
 

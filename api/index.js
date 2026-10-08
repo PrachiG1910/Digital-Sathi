@@ -46537,8 +46537,10 @@ async function connectMongoDB() {
   }
   const uri = config.mongoUri;
   const dbName = config.dbName;
-  if (!uri || process.env.VERCEL === "1" && (uri.includes("127.0.0.1") || uri.includes("localhost"))) {
-    console.warn("[MongoDB] MONGODB_URI is not set in Vercel Environment Variables.");
+  const isLocalUri = !uri || uri.includes("127.0.0.1") || uri.includes("localhost");
+  const isServerlessOrCloud = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV) || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) || Boolean(process.env.NOW_REGION) || process.env.NODE_ENV === "production";
+  if (isLocalUri && isServerlessOrCloud) {
+    console.warn("[MongoDB] MONGODB_URI is not set in Vercel Environment Variables. Please configure MONGODB_URI in Vercel dashboard.");
     return null;
   }
   if (clientPromise) {
@@ -46573,7 +46575,7 @@ async function connectMongoDB() {
       database = null;
       clientPromise = null;
       console.error("\u274C [AUTH] MongoDB connection failed:", error?.message || error);
-      throw error;
+      return null;
     }
   })();
   return clientPromise;
@@ -73865,7 +73867,8 @@ async function startServer() {
   }
   return server;
 }
-if (process.env.VERCEL !== "1" && !process.env.NOW_REGION && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
+var isServerlessRuntime = process.env.VERCEL === "1" || Boolean(process.env.VERCEL_ENV) || Boolean(process.env.AWS_LAMBDA_FUNCTION_NAME) || Boolean(process.env.NOW_REGION);
+if (!isServerlessRuntime) {
   startServer();
 }
 var index_default = app;
