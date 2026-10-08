@@ -24,12 +24,17 @@ export async function connectMongoDB(): Promise<Db> {
 
   clientPromise = (async () => {
     try {
+      if (!uri || (process.env.VERCEL === '1' && uri.includes('127.0.0.1'))) {
+        throw new Error('MONGODB_URI is not configured in Vercel Environment Variables. Please set MONGODB_URI in Vercel Dashboard.');
+      }
+
       client = new MongoClient(uri, {
         maxPoolSize: 10,
-        serverSelectionTimeoutMS: 10000,
-        connectTimeoutMS: 10000,
+        serverSelectionTimeoutMS: 5000,
+        connectTimeoutMS: 5000,
       });
 
+      console.log('[AUTH] Connecting to MongoDB...');
       await client.connect();
       database = client.db(dbName);
       isConnected = true;
@@ -38,24 +43,16 @@ export async function connectMongoDB(): Promise<Db> {
       try {
         await database.collection('users').createIndex({ phone: 1 }, { unique: true });
         await database.collection('alerts').createIndex({ createdAt: -1 });
-      } catch (idxErr) {
-        // Indexes already created
+      } catch {
+        // Indexes already existing or created
       }
 
-      console.log('✅ MongoDB connected successfully');
-      console.log(`📦 Database: ${dbName}`);
-
+      console.log('✅ [AUTH] MongoDB connection successful');
       return database;
     } catch (error: any) {
       isConnected = false;
       clientPromise = null;
-      console.error('❌ Failed to connect to MongoDB:', error?.message || error);
-      if (error?.message?.includes('SSL') || error?.message?.includes('tlsv1') || error?.message?.includes('alert')) {
-        console.error('👉 TIP: MongoDB Atlas SSL Alert 80 is usually caused by:');
-        console.error('   1. MongoDB Atlas Network Access: Make sure IP 0.0.0.0/0 (Allow Access from Anywhere) is active in Atlas.');
-        console.error('   2. Special characters in MongoDB password: Ensure password characters like @, :, #, etc. are URL-encoded.');
-        console.error('   3. Verify MONGODB_URI starts with mongodb+srv://.');
-      }
+      console.error('❌ [AUTH] MongoDB connection failed:', error?.message || error);
       throw error;
     }
   })();
@@ -77,6 +74,6 @@ export async function closeMongoDB(): Promise<void> {
     database = null;
     clientPromise = null;
     isConnected = false;
-    console.log('MongoDB connection closed.');
+    console.log('[AUTH] MongoDB connection closed.');
   }
 }

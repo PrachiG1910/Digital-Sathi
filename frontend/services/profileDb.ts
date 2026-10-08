@@ -23,25 +23,25 @@ function openDb(): Promise<IDBDatabase> {
   });
 }
 
-// Save profile to local IndexedDB and localStorage
-async function saveLocal(profile: UserProfile): Promise<void> {
+// Save profile to local cache for active session and offline caching
+export async function saveLocal(profile: UserProfile): Promise<void> {
   try {
     const db = await openDb();
     await new Promise<void>((resolve, reject) => {
       const tx = db.transaction(STORE_NAME, 'readwrite');
       tx.objectStore(STORE_NAME).put(profile);
       tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error || new Error('Could not save profile'));
+      tx.onerror = () => reject(tx.error || new Error('Could not save profile locally'));
     });
     db.close();
   } catch {
-    // fallback below
+    // fallback to localStorage
   }
   localStorage.setItem(`ds_profile_${profile.phone}`, JSON.stringify(profile));
 }
 
-// Get profile from local IndexedDB or localStorage
-async function getLocal(phone: string): Promise<UserProfile | null> {
+// Get profile from local cache
+export async function getLocal(phone: string): Promise<UserProfile | null> {
   const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
   try {
     const db = await openDb();
@@ -54,7 +54,7 @@ async function getLocal(phone: string): Promise<UserProfile | null> {
     db.close();
     if (result) return result;
   } catch {
-    // fallback below
+    // fallback to localStorage
   }
   const saved = localStorage.getItem(`ds_profile_${cleanPhone}`);
   return saved ? JSON.parse(saved) : null;
@@ -67,7 +67,7 @@ export interface AuthResult {
   profile?: UserProfile;
 }
 
-// Public API: registerUser (Explicit MongoDB Signup)
+// Public API: registerUser (Authoritative MongoDB Registration)
 export async function registerUser(params: {
   name: string;
   phone: string;
@@ -80,7 +80,7 @@ export async function registerUser(params: {
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     const res = await fetch(apiUrl('/api/auth/register'), {
       method: 'POST',
@@ -102,39 +102,35 @@ export async function registerUser(params: {
     const contentType = res.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const data = await res.json();
-      if (data.success && data.profile) {
+      if (res.ok && data.success && data.profile) {
+        // Cache verified profile locally
         await saveLocal(data.profile);
         return { success: true, message: data.message, profile: data.profile };
       } else {
-        return { success: false, error: data.error || 'Failed to register user.' };
+        return { success: false, error: data.error || `Server error (${res.status}): Registration could not be completed.` };
       }
+    } else {
+      return {
+        success: false,
+        error: `Server responded with status ${res.status}. Please ensure MONGODB_URI is configured on the backend.`,
+      };
     }
   } catch (err: any) {
-    console.warn('Network registration attempt encountered error:', err?.message || err);
+    console.error('Registration network error:', err?.message || err);
+    return {
+      success: false,
+      error: 'Unable to connect to the Digital Sathi server. Please check your network connection.',
+    };
   }
-
-  // Local fallback if network is offline
-  const fallbackProfile: UserProfile = {
-    name: cleanName,
-    phone: cleanPhone,
-    language: params.language || 'hi',
-    completedLessons: [],
-    completedPractices: [],
-    practiceScore: 0,
-    voiceRate: params.voiceRate ?? 0.85,
-    fontSize: params.fontSize ?? 'large',
-  };
-  await saveLocal(fallbackProfile);
-  return { success: true, profile: fallbackProfile };
 }
 
-// Public API: loginUser (Explicit MongoDB Lookup)
+// Public API: loginUser (Authoritative MongoDB Login)
 export async function loginUser(phone: string): Promise<AuthResult> {
   const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
 
     const res = await fetch(apiUrl('/api/auth/login'), {
       method: 'POST',
@@ -150,41 +146,42 @@ export async function loginUser(phone: string): Promise<AuthResult> {
     const contentType = res.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       const data = await res.json();
-      if (data.success && data.profile) {
+      if (res.ok && data.success && data.profile) {
         await saveLocal(data.profile);
         return { success: true, message: data.message, profile: data.profile };
       } else {
-        return { success: false, error: data.error || 'User not found in database.' };
+        return {
+          success: false,
+          error: data.error || (res.status === 404 ? 'No profile found for this mobile number. Please create a profile first.' : 'Login failed on server.'),
+        };
       }
+    } else {
+      return {
+        success: false,
+        error: `Server responded with status ${res.status}. Could not verify user in database.`,
+      };
     }
   } catch (err: any) {
-    console.warn('Network login attempt encountered error:', err?.message || err);
+    console.error('Login network error:', err?.message || err);
+    return {
+      success: false,
+      error: 'Unable to connect to the authentication server. Please check your internet connection.',
+    };
   }
-
-  // Fallback to local storage if offline
-  const localProfile = await getLocal(cleanPhone);
-  if (localProfile) {
-    return { success: true, profile: localProfile };
-  }
-
-  return {
-    success: false,
-    error: 'No profile found for this mobile number. Please create a profile first.',
-  };
 }
 
-// Public API: saveProfile (Offline-first + Cloud synchronization)
+// Public API: saveProfile (Sync to MongoDB backend + update local cache)
 export async function saveProfile(profile: UserProfile): Promise<void> {
   const cleanPhone = profile.phone.trim().replace(/\D/g, '').slice(-10);
   const normalizedProfile: UserProfile = { ...profile, phone: cleanPhone };
 
-  // 1. Save locally for instantaneous response and offline safety
+  // Update local session cache
   await saveLocal(normalizedProfile);
 
-  // 2. Sync to MongoDB backend server
+  // Sync to MongoDB backend server
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(cleanPhone)}`), {
       method: 'PUT',
@@ -207,18 +204,17 @@ export async function saveProfile(profile: UserProfile): Promise<void> {
       }
     }
   } catch {
-    // Network temporarily offline; local cache remains active
+    // Background sync failed; will retry on next action
   }
 }
 
-// Public API: getProfile (Checks Backend, falls back to Local)
+// Public API: getProfile (Checks Backend MongoDB, falls back to local cache)
 export async function getProfile(phone: string): Promise<UserProfile | null> {
   const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
 
-  // Try fetching from backend first if online
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     const res = await fetch(apiUrl(`/api/users/${encodeURIComponent(cleanPhone)}`), {
       headers: { 'Accept': 'application/json' },
@@ -237,10 +233,9 @@ export async function getProfile(phone: string): Promise<UserProfile | null> {
       }
     }
   } catch {
-    // Network failure or backend offline - continue to local fallback
+    // Network offline; fall back to local cache
   }
 
-  // Fallback to local IndexedDB and localStorage
   return getLocal(cleanPhone);
 }
 
@@ -262,7 +257,6 @@ export async function deleteProfile(phone: string): Promise<void> {
   }
   localStorage.removeItem(`ds_profile_${cleanPhone}`);
 
-  // Also notify backend to delete from MongoDB
   try {
     fetch(apiUrl(`/api/users/${encodeURIComponent(cleanPhone)}`), {
       method: 'DELETE',

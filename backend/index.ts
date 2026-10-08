@@ -21,14 +21,13 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // Ensure MongoDB connection for all /api requests
-app.use('/api', async (req, res, next) => {
+app.use(['/api', '/auth', '/users', '/tts', '/curriculum', '/ai', '/help'], async (req, res, next) => {
   try {
     await connectMongoDB();
-    next();
   } catch (error: any) {
-    console.error('Database connection error in API route:', error?.message || error);
-    next();
+    console.error('Database connection error in API route middleware:', error?.message || error);
   }
+  next();
 });
 
 // Request logging in development
@@ -43,8 +42,8 @@ if (config.isDev) {
   });
 }
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
+// Health check endpoint (accessible at both /api/health and /health)
+const healthHandler = (req: express.Request, res: express.Response) => {
   const dbConnected = isMongoDBConnected();
   res.status(200).json({
     status: dbConnected ? 'online' : 'degraded',
@@ -65,25 +64,38 @@ app.get('/api/health', (req, res) => {
       emergencyAlerts: true,
     },
   });
-});
+};
 
-// Mount API routes
+app.get('/api/health', healthHandler);
+app.get('/health', healthHandler);
+
+// Mount API routes with and without /api prefix to handle all Vercel rewrite patterns
 app.use('/api/auth', authRouter);
-app.use('/api/users', usersRouter);
-app.use('/api/tts', ttsRouter);
-app.use('/api/curriculum', curriculumRouter);
-app.use('/api/ai', aiRouter);
-app.use('/api/help', emergencyRouter);
+app.use('/auth', authRouter);
 
-// Serve static frontend in production if dist/ folder exists
+app.use('/api/users', usersRouter);
+app.use('/users', usersRouter);
+
+app.use('/api/tts', ttsRouter);
+app.use('/tts', ttsRouter);
+
+app.use('/api/curriculum', curriculumRouter);
+app.use('/curriculum', curriculumRouter);
+
+app.use('/api/ai', aiRouter);
+app.use('/ai', aiRouter);
+
+app.use('/api/help', emergencyRouter);
+app.use('/help', emergencyRouter);
+
+// Serve static frontend in production if dist/ folder exists (for unified Node deployment)
 const distPath = path.resolve(process.cwd(), 'dist');
 if (fs.existsSync(distPath)) {
-  console.log(`[Static] Serving frontend assets from: ${distPath}`);
   app.use(express.static(distPath));
 
   // SPA fallback for HTML5 routing
   app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api/')) {
+    if (req.path.startsWith('/api/') || req.path.startsWith('/auth/') || req.path.startsWith('/users/')) {
       return next();
     }
     res.sendFile(path.join(distPath, 'index.html'));
@@ -93,7 +105,7 @@ if (fs.existsSync(distPath)) {
 // Error handling
 app.use(errorHandler);
 
-// Start server and initialize MongoDB connection when not in serverless runtime
+// Start server listener only when executed directly (standalone Node / Render), not in serverless
 async function startServer() {
   const server = app.listen(config.port, config.host, () => {
     console.log(`=======================================================`);
@@ -129,7 +141,7 @@ async function startServer() {
   return server;
 }
 
-if (process.env.VERCEL !== '1' && !process.env.NOW_REGION) {
+if (process.env.VERCEL !== '1' && !process.env.NOW_REGION && !process.env.AWS_LAMBDA_FUNCTION_NAME) {
   startServer();
 }
 
