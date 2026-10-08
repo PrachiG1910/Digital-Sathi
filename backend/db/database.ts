@@ -6,11 +6,17 @@ import { UserRecord, AlertRecord, DatabaseSchema } from './types';
 class Database {
   private async getUsersCollection() {
     const db = await connectMongoDB();
+    if (!db) {
+      throw new Error('Database is not connected. Please ensure MONGODB_URI is configured in Vercel Project Settings.');
+    }
     return db.collection<UserRecord>('users');
   }
 
   private async getAlertsCollection() {
     const db = await connectMongoDB();
+    if (!db) {
+      throw new Error('Database is not connected. Please ensure MONGODB_URI is configured in Vercel Project Settings.');
+    }
     return db.collection<AlertRecord>('alerts');
   }
 
@@ -74,7 +80,7 @@ class Database {
 
       console.log('✅ Legacy data check and migration to MongoDB complete.');
     } catch (error) {
-      console.warn('[Migration] Note: Legacy migration skipped or not needed:', error);
+      // Ignored for serverless
     }
   }
 
